@@ -126,6 +126,15 @@ function App() {
     setDraft((d) => ({ ...d, ...partial }));
   };
 
+  const handleCancel = () => {
+    // reset draft to selected note values
+    if (selected) {
+      setDraft({ title: selected.title || "", content: selected.content || "" });
+    } else {
+      setDraft({ title: "", content: "" });
+    }
+  };
+
   const handleSave = async () => {
     if (!selected) {
       // If no selection, create new
@@ -152,6 +161,8 @@ function App() {
     }
   };
 
+  const apiHint = apiBase && apiBase.length > 0 ? apiBase : "(proxy via package.json -> http://localhost:3001)";
+
   return (
     <div className="App">
       <button
@@ -175,14 +186,13 @@ function App() {
             error={loadingError}
           />
           <main className="main">
-            <div className="api-hint">
-              API: {apiBase || "(proxy via /notes)"} {/* quick hint for debugging */}
-            </div>
+            <div className="api-hint" aria-live="polite">API: {apiHint}</div>
             <NoteEditor
               note={selected}
               onChange={handleDraftChange}
               onSave={handleSave}
               saving={saving}
+              onCancel={handleCancel}
             />
           </main>
         </div>

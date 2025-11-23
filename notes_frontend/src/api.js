@@ -1,14 +1,17 @@
 //
+//
 // PUBLIC_INTERFACE
 // API client for Notes CRUD with environment-based base URL and proxy fallback.
 //
+// getBaseUrl uses REACT_APP_API_BASE if provided; otherwise it returns an empty string,
+// so requests go to relative paths like `/notes`, which CRA proxies to package.json "proxy".
 const getBaseUrl = () => {
   // If REACT_APP_API_BASE is set, use it; otherwise use relative paths and rely on CRA proxy.
   const envBase = process.env.REACT_APP_API_BASE;
   if (envBase && envBase.trim().length > 0) {
     return envBase.replace(/\/+$/, "");
   }
-  return ""; // relative path to use CRA proxy
+  return ""; // relative path to use CRA proxy (http://localhost:3001 based on package.json)
 };
 
 const BASE = getBaseUrl();
@@ -17,6 +20,7 @@ const BASE = getBaseUrl();
 async function handleResponse(res) {
   const contentType = res.headers.get("content-type") || "";
   const isJson = contentType.includes("application/json");
+  // DELETE may return 204 No Content; text() on 204 resolves to empty string, which is fine.
   const payload = isJson ? await res.json().catch(() => null) : await res.text().catch(() => null);
   if (!res.ok) {
     const message =
